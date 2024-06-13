@@ -3,7 +3,7 @@
 import schedule
 import time
 import threading
-import logging, psutil, platform
+import logging, psutil, platform, requests
 import subprocess
 from telegram import Update, ParseMode, Bot
 import datetime
