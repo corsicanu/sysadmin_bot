@@ -94,6 +94,7 @@ def daily():
     uptime = get_uptime()
     current_time = get_current_time()
     free_space_gb = get_free_space('/home')
+    ip = get_ip()
     
     # Get memory and swap usage
     ram_usage, ram_total = get_memory_info()
@@ -104,6 +105,7 @@ def daily():
     response = (
         f"<b>System status:</b> OK\n"
         f"<b>Hostname:</b> {platform.node()}\n"
+        f"<b>IP:</b> {ip}\n"
         f"<b>Temperature:</b> {temp}\n"
         f"<b>Disk Free Space:</b> {free_space_gb:.2f} GB\n"
         f"<b>Memory:</b> {ram_usage:.2f} MB / {ram_total:.2f} MB\n"
