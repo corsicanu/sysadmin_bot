@@ -1,0 +1,8 @@
+sysadmin_bot/config.py
+__pycache__
+*.pyc
+.idea/
+.project
+.pydevproject
+.directory
+.vscode
