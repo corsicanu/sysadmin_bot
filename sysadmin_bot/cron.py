@@ -9,14 +9,12 @@ from telegram import Update, ParseMode, Bot
 import datetime
 from .config_loader import get_telegram_bot_token, get_owner_id, get_machine_password
 
-# Configure logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# helpers
 def get_current_time():
     return datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -28,8 +26,12 @@ def get_uptime():
     return f"{days} days, {hours} hours, {minutes} minutes"
 
 def get_ip():
-    res = requests.get("http://ipinfo.io/ip")
-    return res;
+    try:
+        res = requests.get("http://ipinfo.io/ip")
+        return res.text.strip()
+    except Exception as e:
+        logger.error(f"Failed to get IP address: {str(e)}")
+        return "N/A"
 
 def get_free_space(path):
     partition = psutil.disk_usage(path)
@@ -45,22 +47,16 @@ def get_swap_info():
 
 def check_updates():
     try:
-        # Command to update apt
         command = "echo {} | sudo -S apt update".format(get_machine_password())
-        
-        # Run the command
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
         
-        # Split the output into lines
         output_lines = result.stdout.splitlines()
         
-        # Get the last line
         if output_lines:
             last_line = output_lines[-1]
         else:
             last_line = "No output returned"
         
-        # Print the last line
         return last_line
     
     except subprocess.CalledProcessError as e:
@@ -89,23 +85,21 @@ def send_message(message):
     except Exception as e:
         print(f"Failed to send message to user ID {OWNER_ID}: {str(e)}")
 
-# actual cron
 def daily():
     uptime = get_uptime()
     current_time = get_current_time()
     free_space_gb = get_free_space('/home')
     ip = get_ip()
+    send_message(ip)
     
-    # Get memory and swap usage
     ram_usage, ram_total = get_memory_info()
     swap_usage, total_swap = get_swap_info()
     temp=get_temp()
     
-    # Compose the response message in HTML format
     response = (
         f"<b>System status:</b> OK\n"
-        f"<b>Hostname:</b> {platform.node()}\n"
         f"<b>IP:</b> {ip}\n"
+        f"<b>Hostname:</b> {platform.node()}\n"
         f"<b>Temperature:</b> {temp}\n"
         f"<b>Disk Free Space:</b> {free_space_gb:.2f} GB\n"
         f"<b>Memory:</b> {ram_usage:.2f} MB / {ram_total:.2f} MB\n"
@@ -115,31 +109,21 @@ def daily():
         f"<b>{check_updates()}</b>\n"
     )
 
-    # Send the response to the user
     send_message(response)
 
-# Function to schedule jobs
 def schedule_jobs():
-    # Schedule a job to run every day at 10:30 AM
-    # schedule.every().day.at("11:08").do(neofetch)
-
-    # Schedule a job to run every Monday at 8:00 PM
-    # schedule.every().monday.at("20:00").do(job)
-
-    # Example: Schedule a job to run every 30 minutes
+    # schedule.every().day.at("06:00").do()
+    # schedule.every().monday.at("20:00").do()
     schedule.every(5).seconds.do(daily)
 
-    # Start the scheduler thread
     while True:
         schedule.run_pending()
         time.sleep(1)
 
-# Function to start the scheduler in a separate thread
 def start_scheduler():
     scheduler_thread = threading.Thread(target=schedule_jobs)
     scheduler_thread.start()
 
-# Call start_scheduler when this file is executed directly
 if __name__ == "__main__":
     logger.info("Starting cron...")
     start_scheduler()
