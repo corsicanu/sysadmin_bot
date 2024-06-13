@@ -90,7 +90,6 @@ def daily():
     current_time = get_current_time()
     free_space_gb = get_free_space('/home')
     ip = get_ip()
-    send_message(ip)
     
     ram_usage, ram_total = get_memory_info()
     swap_usage, total_swap = get_swap_info()
