@@ -111,7 +111,7 @@ def daily():
     send_message(response)
 
 def schedule_jobs():
-    schedule.every().day.at("06:00").do()
+    schedule.every().day.at("06:00").do(daily)
     # schedule.every().monday.at("20:00").do()
     # schedule.every(5).seconds.do(daily)
 
